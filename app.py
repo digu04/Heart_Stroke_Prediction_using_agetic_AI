@@ -4,75 +4,109 @@ import joblib
 import pandas as pd
 from flask import Flask, request, render_template
 
-# Initialize the Flask application
+# -----------------------------
+# INITIALIZE APP
+# -----------------------------
 app = Flask(__name__)
 
-# Load the saved model, scaler, and column names
-model = joblib.load(r'E:\Heart_Stroke_Prediction\KNN_heart.pkl')
-scaler = joblib.load(r'E:\Heart_Stroke_Prediction\scaler.pkl')
-columns = joblib.load(r'E:\Heart_Stroke_Prediction\columns.pkl')
+# -----------------------------
+# LOAD LOCKED MODEL
+# -----------------------------
+model = joblib.load("best_model.pkl")
+feature_columns = joblib.load("feature_columns.pkl")
 
+
+# -----------------------------
+# CLEANING FUNCTIONS
+# -----------------------------
+def clean_numeric(value, default=0):
+    try:
+        return float(value)
+    except:
+        return float(default)
+
+
+def clean_fastingbs(value):
+    try:
+        return int(value)
+    except:
+        v = str(value).lower()
+        if v in ["yes", "y", "true", "1", "high"]:
+            return 1
+        return 0
+
+
+# -----------------------------
+# HOME ROUTE
+# -----------------------------
 @app.route('/')
 def home():
-    """Renders the home page with the input form."""
     return render_template('index.html')
 
+
+# -----------------------------
+# PREDICTION ROUTE
+# -----------------------------
 @app.route('/predict', methods=['POST'])
 def predict():
-    """Handles the prediction request."""
-    
+
     data = request.form
 
-    # Create default dictionary with all model columns = 0
-    user_input = {col: 0 for col in columns}
+    # -----------------------------
+    # CLEAN INPUT DATA
+    # -----------------------------
+    cleaned_data = {
+        "Age": clean_numeric(data.get("Age")),
+        "RestingBP": clean_numeric(data.get("RestingBP")),
+        "Cholesterol": clean_numeric(data.get("Cholesterol")),
+        "MaxHR": clean_numeric(data.get("MaxHR")),
+        "Oldpeak": clean_numeric(data.get("Oldpeak")),
+        "FastingBS": clean_fastingbs(data.get("FastingBS")),
 
-    # Numerical features
-    user_input['Age'] = int(data['Age'])
-    user_input['RestingBP'] = float(data['RestingBP'])
-    user_input['Cholesterol'] = float(data['Cholesterol'])
-    user_input['FastingBS'] = int(data['FastingBS'])
-    user_input['MaxHR'] = int(data['MaxHR'])
-    user_input['Oldpeak'] = float(data['Oldpeak'])
-
-    # Sex
-    user_input['Sex_M'] = 1 if data['Sex'] == 'M' else 0
-
-    # Chest Pain Type (MODEL HAS ONLY ATA, NAP, TA)
-    if data['ChestPainType'] in ['ATA', 'NAP', 'TA']:
-        user_input[f"ChestPainType_{data['ChestPainType']}"] = 1
-
-    # Resting ECG (MODEL HAS ONLY Normal, ST)
-    if data['RestingECG'] in ['Normal', 'ST']:
-        user_input[f"RestingECG_{data['RestingECG']}"] = 1
-
-    # Exercise Angina
-    user_input['ExerciseAngina_Y'] = 1 if data['ExerciseAngina'] == 'Y' else 0
-
-    # ST Slope (MODEL HAS ONLY Flat, Up)
-    if data['ST_Slope'] in ['Flat', 'Up']:
-        user_input[f"ST_Slope_{data['ST_Slope']}"] = 1
+        "Sex": data.get("Sex"),
+        "ChestPainType": data.get("ChestPainType"),
+        "RestingECG": data.get("RestingECG"),
+        "ExerciseAngina": data.get("ExerciseAngina"),
+        "ST_Slope": data.get("ST_Slope"),
+    }
 
     # Convert to DataFrame
-    input_df = pd.DataFrame([user_input])
+    input_df = pd.DataFrame([cleaned_data])
 
-    # Scale
-    input_scaled = scaler.transform(input_df)
+    # Apply same encoding as training
+    input_df = pd.get_dummies(input_df, drop_first=True)
 
-    # Prediction (0 or 1)
-    prediction = model.predict(input_scaled)[0]
+    # Align with training feature structure
+    input_df = input_df.reindex(columns=feature_columns, fill_value=0)
 
-    # Probability in percentage
-    probability = model.predict_proba(input_scaled)[0][1] * 100
-    probability = round(probability, 2)
+    # -----------------------------
+    # PREDICTION
+    # -----------------------------
+    prediction = int(model.predict(input_df)[0])
+    probability = round(model.predict_proba(input_df)[0][1] * 100, 2)
 
-    # Result text
-    result = "High Risk of Heart Disease 🚨" if prediction == 1 else "Low Risk of Heart Disease 🌱"
+    # -----------------------------
+    # RISK CATEGORY
+    # -----------------------------
+    if probability < 30:
+        risk_level = "Low Risk 🌱"
+    elif probability < 60:
+        risk_level = "Moderate Risk ⚠"
+    else:
+        risk_level = "High Risk 🚨"
+
+    result = "Heart Disease Likely" if prediction == 1 else "Heart Disease Unlikely"
 
     return render_template(
         'index.html',
         prediction_result=result,
-        probability=probability
+        probability=probability,
+        risk_level=risk_level
     )
 
+
+# -----------------------------
+# RUN APP
+# -----------------------------
 if __name__ == '__main__':
     app.run(debug=True)

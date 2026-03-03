@@ -2,11 +2,7 @@
 # streamlit_app.py — FINAL VERSION WITH SIDEBAR + NEXT/BACK
 # =============================================================
 
-import streamlit as st 
-from PyPDF2 import PdfReader
-from pdf2image import convert_from_bytes
-import easyocr
-import numpy as np
+import streamlit as st
 
 from agents.pipeline import (
     process_free_text_input,
@@ -193,68 +189,6 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# -------------------------------------------------------------
-# SAFE PDF TEXT EXTRACTION (TEXT + OCR FALLBACK)
-# -------------------------------------------------------------
-def extract_text_from_pdf(uploaded_file):
-
-    # Try normal PDF text extraction first
-    try:
-        uploaded_file.seek(0)
-        reader = PdfReader(uploaded_file)
-        text = ""
-
-        for page in reader.pages:
-            extracted = page.extract_text()
-            if extracted:
-                text += extracted
-
-        if text.strip() != "":
-            return text
-
-    except Exception:
-        pass
-
-    # If text extraction fails, use OCR
-    st.info("Using OCR for scanned PDF...")
-
-    uploaded_file.seek(0)
-    images = convert_from_bytes(uploaded_file.read(), dpi=300)
-
-    reader_ocr = easyocr.Reader(['en'], gpu=False)
-    ocr_text = ""
-
-    for img in images:
-        img_array = np.array(img)
-        result = reader_ocr.readtext(img_array, detail=0)
-        ocr_text += " ".join(result)
-
-    return ocr_text
-
-# -------------------------------------------------------------
-# EXTRACT MEDICAL VALUES FROM TEXT
-# -------------------------------------------------------------
-def extract_medical_values_from_text(text):
-
-    import re
-
-    def find(pattern, default=None):
-        match = re.search(pattern, text, re.IGNORECASE)
-        return match.group(1) if match else default
-
-    return {
-        "Age": int(find(r"Age[:\s]+(\d+)", 50)),
-        "Sex": "M" if "male" in text.lower() else "F",
-        "ChestPainType": "ATA" if "chest pain" in text.lower() else "NAP",
-        "RestingBP": int(find(r"(?:BP|Blood Pressure)[:\s]+(\d+)", 120)),
-        "Cholesterol": int(find(r"Cholesterol[:\s]+(\d+)", 200)),
-        "FastingBS": "1" if "high sugar" in text.lower() else "0",
-        "RestingECG": "Normal",
-        "MaxHR": int(find(r"MaxHR[:\s]+(\d+)", 150)),
-        "ExerciseAngina": "Y" if "angina" in text.lower() else "N",
-        "Oldpeak": float(find(r"Oldpeak[:\s]+([\d.]+)", 0)),
-        "ST_Slope": "Flat"
-    }
 
 # ====================================================================
 # PAGE 1 — REGISTER
@@ -303,7 +237,7 @@ if st.session_state.current_page == "Register":
 
 
 # ====================================================================
-# PAGE — INPUT
+# PAGE 2 — INPUT
 # ====================================================================
 elif st.session_state.current_page == "Input":
 
@@ -314,21 +248,14 @@ elif st.session_state.current_page == "Input":
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.subheader("📝 Enter Your Details")
 
-    mode = st.radio(
-        "Select Input Type:",
-        ["Form Input", "Free Text Input", "Upload Report"],
-        horizontal=True
-    )
+    mode = st.radio("Input Type:", ["Form Input", "Free Text"], key="input_type")
 
-    # -----------------------------
-    # FORM INPUT
-    # -----------------------------
+    # Form Input
     if mode == "Form Input":
-
         with st.form("form_data"):
             age = st.number_input("Age", 1, 120)
             sex = st.selectbox("Sex", ["M", "F"])
-            cp = st.selectbox("Chest Pain Type", ["ATA", "NAP", "TA"])
+            cp = st.selectbox("Chest Pain", ["ATA", "NAP", "TA"])
             bp = st.number_input("Resting BP", 0, 250)
             chol = st.number_input("Cholesterol", 0, 600)
             fbs = st.selectbox("Fasting BS >120?", ["0", "1"])
@@ -342,96 +269,47 @@ elif st.session_state.current_page == "Input":
 
         if submit:
             data = {
-                "Age": age,
-                "Sex": sex,
-                "ChestPainType": cp,
-                "RestingBP": bp,
-                "Cholesterol": chol,
-                "FastingBS": fbs,
-                "RestingECG": ecg,
-                "MaxHR": maxhr,
-                "ExerciseAngina": exang,
-                "Oldpeak": old,
-                "ST_Slope": slope
+                "Age": age, "Sex": sex, "ChestPainType": cp,
+                "RestingBP": bp, "Cholesterol": chol, "FastingBS": fbs,
+                "RestingECG": ecg, "MaxHR": maxhr,
+                "ExerciseAngina": exang, "Oldpeak": old, "ST_Slope": slope
             }
 
             ctx, pdf = run_full_pipeline(data, user_info=st.session_state.user)
+
             st.session_state.context = ctx
             st.session_state.pdf_path = pdf
-            st.session_state.current_page = "Results"
-            st.rerun()
+            st.session_state.prediction = ctx["prediction"]
+            st.session_state.risk = ctx["risk"]
+            st.session_state.reasoning = ctx["reasoning"]
+            st.session_state.lifestyle = ctx["lifestyle"]
+            st.session_state.chat_history = []
 
-    # -----------------------------
-    # FREE TEXT INPUT
-    # -----------------------------
-    elif mode == "Free Text Input":
+            next_page()
 
+    # Free Text
+    else:
         text = st.text_area("Describe your symptoms")
 
         if st.button("Analyze & Predict"):
             extracted = process_free_text_input(text)
+            st.json(extracted)
 
             if "error" not in extracted:
                 ctx, pdf = run_full_pipeline(extracted, user_info=st.session_state.user)
+
                 st.session_state.context = ctx
                 st.session_state.pdf_path = pdf
-                st.session_state.current_page = "Results"
-                st.rerun()
-            else:
-                st.error(extracted["error"])
+                st.session_state.prediction = ctx["prediction"]
+                st.session_state.risk = ctx["risk"]
+                st.session_state.reasoning = ctx["reasoning"]
+                st.session_state.lifestyle = ctx["lifestyle"]
+                st.session_state.chat_history = []
 
-       # -----------------------------
-    # UPLOAD REPORT (PDF)
-    # -----------------------------
-    else:
-
-        uploaded_file = st.file_uploader("Upload Medical Report (PDF)", type="pdf")
-
-        if uploaded_file:
-
-            # -------- SAFE TEXT EXTRACTION --------
-            text = ""
-
-            try:
-                uploaded_file.seek(0)
-                reader = PdfReader(uploaded_file)
-
-                for page in reader.pages:
-                    extracted = page.extract_text()
-                    if extracted:
-                        text += extracted
-
-            except Exception:
-                pass
-
-            # -------- IF EMPTY → USE OCR --------
-            if not text.strip():
-                st.info("Using OCR for scanned PDF...")
-                uploaded_file.seek(0)
-
-                images = convert_from_bytes(uploaded_file.read(), dpi=300)
-                reader_ocr = easyocr.Reader(['en'], gpu=False)
-
-                for img in images:
-                    img_array = np.array(img)
-                    result = reader_ocr.readtext(img_array, detail=0)
-                    text += " ".join(result)
-
-            # -------------------------------------
-
-            st.text_area("Extracted Text", text, height=200)
-
-            extracted_data = extract_medical_values_from_text(text)
-            st.json(extracted_data)
-
-            if st.button("Run Prediction from Report"):
-                ctx, pdf = run_full_pipeline(extracted_data, user_info=st.session_state.user)
-                st.session_state.context = ctx
-                st.session_state.pdf_path = pdf
-                st.session_state.current_page = "Results"
-                st.rerun()
+                next_page()
 
     st.markdown('</div>', unsafe_allow_html=True)
+
 
 # ====================================================================
 # PAGE 3 — RESULTS
@@ -553,55 +431,22 @@ elif st.session_state.current_page == "History":
             st.markdown('</div>', unsafe_allow_html=True)
 
 # ====================================================================
-# SMART NAVIGATION BUTTONS
+# SIMPLE STREAMLIT NAVIGATION BUTTONS (NO JS, NO DOUBLE CLICK)
 # ====================================================================
 
 page_index = order.index(st.session_state.current_page)
 
-col1, col2, col3 = st.columns([1, 6, 1])
+# BACK button
+if page_index > 0:
+    if st.button("⬅ Back", key="nav_back"):
+        prev_page()
+        st.rerun()
 
-with col1:
-    if page_index > 0:
-        if st.button("⬅ Back", key="nav_back"):
-            st.session_state.current_page = order[page_index - 1]
-            st.rerun()
+# NEXT button
+if page_index < len(order) - 1:
+    if st.button("Next ➡", key="nav_next"):
+        next_page()
+        st.rerun()
 
-with col3:
-    if page_index < len(order) - 1:
-
-        allow_next = True
-        warning_message = None
-
-        # ---- VALIDATION RULES ----
-
-        if st.session_state.current_page == "Register":
-            if st.session_state.user is None:
-                allow_next = False
-                warning_message = "⚠ Please register first."
-
-        elif st.session_state.current_page == "Input":
-            if st.session_state.context is None:
-                allow_next = False
-                warning_message = "⚠ Please run prediction first."
-
-        elif st.session_state.current_page == "Report Upload":
-            if st.session_state.context is None:
-                allow_next = False
-                warning_message = "⚠ Please upload report and run prediction."
-
-        elif st.session_state.current_page == "Results":
-            if st.session_state.context is None:
-                allow_next = False
-                warning_message = "⚠ No prediction available."
-
-        # ---- RENDER BUTTON ----
-
-        if allow_next:
-            if st.button("Next ➡", key="nav_next"):
-                st.session_state.current_page = order[page_index + 1]
-                st.rerun()
-        else:
-            if st.button("Next ➡", key="nav_next_disabled"):
-                st.warning(warning_message)
 
 

@@ -1,4 +1,4 @@
 import joblib
 
-columns = joblib.load("columns.pkl")
+columns = joblib.load("feature_columns.pkl")
 print(columns)
