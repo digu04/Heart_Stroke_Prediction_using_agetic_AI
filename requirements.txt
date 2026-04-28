@@ -1,0 +1,12 @@
+streamlit
+Flask
+pandas
+numpy
+scikit-learn
+joblib
+groq
+reportlab
+PyPDF2
+pdf2image
+easyocr
+pytest

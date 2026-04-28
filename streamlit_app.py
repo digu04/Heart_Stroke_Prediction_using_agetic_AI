@@ -189,7 +189,7 @@ with st.sidebar:
 # -------------------------------------------------------------
 st.markdown("""
 <div class="app-header">
-    <h1>Heart Disease Prediction App</h1>
+    <h1>Heart Disease Risk Assessment</h1>
 </div>
 """, unsafe_allow_html=True)
 
