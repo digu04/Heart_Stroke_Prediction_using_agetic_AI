@@ -61,13 +61,27 @@ body { background-color: #F7FBFF; }
 }
 
 /* Chat box */
+.chat-input-box {
+    background: #FFFFFF;
+    border: 1px solid #DDEBFF;
+    padding: 22px;
+    width: 72%;
+    min-width: 320px;
+    margin: 0 auto 18px auto;
+    border-radius: 6px;
+    box-shadow: 0 4px 14px rgba(80,150,255,0.15);
+}
 .chat-box {
     background: #FFFFFF;
     border: 1px solid #DDEBFF;
     padding: 20px;
     height: 380px;
+    width: 72%;
+    min-width: 320px;
+    margin: 0 auto;
     overflow-y: auto;
-    border-radius: 15px;
+    border-radius: 6px;
+    box-shadow: 0 4px 14px rgba(80,150,255,0.15);
 }
 .user-msg {
     background: #A7D8FF;
@@ -261,7 +275,7 @@ def extract_medical_values_from_text(text):
 # ====================================================================
 if st.session_state.current_page == "Register":
 
-    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.markdown('<div class="chat-input-box">', unsafe_allow_html=True)
     st.subheader("👤 Register or Continue")
 
     users = load_users()
@@ -491,15 +505,11 @@ elif st.session_state.current_page == "Chat":
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown('<div class="chat-box">', unsafe_allow_html=True)
-
     for sender, text in st.session_state.chat_history:
         if sender == "You":
             st.markdown(f'<div class="user-msg">{text}</div>', unsafe_allow_html=True)
         else:
             st.markdown(f'<div class="ai-msg">{text}</div>', unsafe_allow_html=True)
-
-    st.markdown('</div>', unsafe_allow_html=True)
 
 
 # ====================================================================

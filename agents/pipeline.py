@@ -41,7 +41,7 @@ def run_full_pipeline(features: dict, user_info=None):
     Full AI pipeline that now includes USER INFO (name, email, mobile)
     """
 
-    # 1. ML model (KNN)
+    # 1. ML model (Random Forest)
     result = predict_heart_disease(features)
     prediction = result["prediction"]
     risk = result["risk_percentage"]
