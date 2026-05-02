@@ -1,5 +1,5 @@
-streamlit
 Flask
+gunicorn
 pandas
 numpy
 scikit-learn
