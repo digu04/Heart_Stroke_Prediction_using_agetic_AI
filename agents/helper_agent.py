@@ -1,9 +1,16 @@
 # agents/helper_agent.py
 
+import os
 import json
-import subprocess
+from groq import Groq
 
-OLLAMA_MODEL = "llama3:8b"
+# Use Groq cloud API (works on Render)
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+if not GROQ_API_KEY:
+    raise ValueError("GROQ_API_KEY is not set!")
+
+client = Groq(api_key=GROQ_API_KEY)
+MODEL_NAME = "llama-3.1-8b-instant"
 
 SYSTEM_PROMPT = """
 You are a medical input-processing agent.
@@ -38,24 +45,25 @@ Return ONLY the JSON. No extra text.
 """
 
 
-def call_ollama(prompt: str):
-    result = subprocess.run(
-        ["ollama", "run", OLLAMA_MODEL],
-        input=prompt.encode("utf-8"),
-        stdout=subprocess.PIPE
-    )
-    return result.stdout.decode("utf-8")
-
 def helper_agent_process(input_text: str):
     prompt = SYSTEM_PROMPT + "\nUser Input:\n" + input_text + "\nJSON Output:"
-    response = call_ollama(prompt)
+
+    response = client.chat.completions.create(
+        model=MODEL_NAME,
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": f"User Input:\n{input_text}\nJSON Output:"},
+        ]
+    )
+
+    raw = response.choices[0].message.content
 
     # Try to extract JSON
     try:
-        json_start = response.find("{")
-        json_end = response.rfind("}") + 1
-        json_str = response[json_start:json_end]
+        json_start = raw.find("{")
+        json_end = raw.rfind("}") + 1
+        json_str = raw[json_start:json_end]
         data = json.loads(json_str)
         return data
     except Exception as e:
-        return {"error": "Invalid JSON returned by model", "raw_output": response}
+        return {"error": "Invalid JSON returned by model", "raw_output": raw}

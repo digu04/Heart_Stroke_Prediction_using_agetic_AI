@@ -185,25 +185,8 @@ def api_extract_pdf():
     except Exception:
         pass
 
-    # OCR fallback if text extraction fails
     if not text.strip():
-        try:
-            file.seek(0)
-            from pdf2image import convert_from_bytes
-            import easyocr
-
-            images = convert_from_bytes(file.read(), dpi=300)
-            reader_ocr = easyocr.Reader(['en'], gpu=False)
-
-            for img in images:
-                img_array = np.array(img)
-                result = reader_ocr.readtext(img_array, detail=0)
-                text += " ".join(result)
-        except Exception as e:
-            return jsonify({"success": False, "error": f"PDF extraction failed: {str(e)}"})
-
-    if not text.strip():
-        return jsonify({"success": False, "error": "Could not extract any text from PDF."})
+        return jsonify({"success": False, "error": "Could not extract text from PDF. Please use a text-based PDF (not scanned)."})
 
     extracted_data = extract_medical_values_from_text(text)
     return jsonify({"success": True, "extracted": extracted_data, "raw_text": text[:500]})

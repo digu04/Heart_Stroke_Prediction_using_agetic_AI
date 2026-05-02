@@ -7,6 +7,3 @@ joblib
 groq
 reportlab
 PyPDF2
-pdf2image
-easyocr
-pytest

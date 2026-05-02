@@ -1,10 +1,15 @@
 # agents/feedback_agent.py
 
-import subprocess
-import json
+import os
+from groq import Groq
 
-# FIXED MODEL NAME — this model exists on your system
-FEEDBACK_MODEL = "llama3.1:8b"
+# Use Groq cloud API (works on Render)
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+if not GROQ_API_KEY:
+    raise ValueError("GROQ_API_KEY is not set!")
+
+client = Groq(api_key=GROQ_API_KEY)
+MODEL_NAME = "llama-3.1-8b-instant"
 
 SYSTEM_PROMPT = """
 You are a patient-support feedback agent.
@@ -17,23 +22,15 @@ Your job:
 - Always answer safely and politely
 """
 
-def call_ollama(prompt: str):
-    result = subprocess.run(
-        ["ollama", "run", FEEDBACK_MODEL],
-        input=prompt.encode("utf-8"),
-        stdout=subprocess.PIPE
-    )
-    return result.stdout.decode("utf-8")
 
 def feedback_agent_process(user_message: str, context: dict):
     """
     context contains:
        prediction, risk, features, reasoning, lifestyle
     """
+    import json
 
     prompt = f"""
-{SYSTEM_PROMPT}
-
 Patient Context:
 {json.dumps(context, indent=2)}
 
@@ -43,5 +40,12 @@ User Feedback:
 Your helpful response:
 """
 
-    response = call_ollama(prompt)
-    return response.strip()
+    response = client.chat.completions.create(
+        model=MODEL_NAME,
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": prompt},
+        ]
+    )
+
+    return response.choices[0].message.content
