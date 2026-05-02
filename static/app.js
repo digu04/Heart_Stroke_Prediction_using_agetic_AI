@@ -46,6 +46,13 @@ function navigateTo(page) {
     document.getElementById('sidebar').classList.remove('open');
     document.getElementById('mobileOverlay').classList.remove('visible');
 
+    // Update particle system progress
+    const pageOrder = ['register', 'input', 'results', 'chat', 'history'];
+    const stepIndex = pageOrder.indexOf(page);
+    if (particleSystem && stepIndex >= 0) {
+        particleSystem.setProgress(stepIndex);
+    }
+
     // Page-specific actions
     if (page === 'history') loadHistory();
     if (page === 'register') loadExistingUsers();
