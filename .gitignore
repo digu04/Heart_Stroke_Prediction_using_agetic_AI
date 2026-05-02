@@ -1,0 +1,29 @@
+# Byte-compiled
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+venv/
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Generated files (will be created at runtime)
+generated_report.pdf
+
+# Old streamlit (not needed for deployment)
+old streamlit.py
+
+# Notebooks & papers (not needed for deployment)
+*.ipynb
+*.pdf
+!generated_report.pdf
+
+# Paper figures
+paper_figures/
