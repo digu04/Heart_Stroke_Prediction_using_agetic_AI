@@ -1,394 +1,404 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Heart Disease Risk Assessment powered by Agentic AI — Get instant predictions, medical interpretation, and lifestyle recommendations.">
+    <meta name="description"
+        content="Heart Disease Risk Assessment powered by Agentic AI — Get instant predictions, medical interpretation, and lifestyle recommendations.">
     <title>Heart Disease Prediction — Agentic AI</title>
     <link rel="stylesheet" href="/static/style.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❤️</text></svg>">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❤️</text></svg>">
 </head>
+
 <body>
 
-<!-- 3D PARTICLE CANVAS -->
-<canvas id="particleCanvas" style="position:fixed;inset:0;z-index:0;pointer-events:none;"></canvas>
+    <!-- 3D PARTICLE CANVAS -->
+    <canvas id="particleCanvas" style="position:fixed;inset:0;z-index:0;pointer-events:none;"></canvas>
 
-<!-- LOADING OVERLAY -->
-<div class="spinner-overlay" id="loadingOverlay">
-    <div class="spinner"></div>
-    <div class="spinner-text" id="loadingText">Running AI pipeline...</div>
-</div>
+    <!-- LOADING OVERLAY -->
+    <div class="spinner-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="spinner-text" id="loadingText">Running AI pipeline...</div>
+    </div>
 
-<!-- MOBILE OVERLAY -->
-<div class="overlay" id="mobileOverlay" onclick="toggleSidebar()"></div>
+    <!-- MOBILE OVERLAY -->
+    <div class="overlay" id="mobileOverlay" onclick="toggleSidebar()"></div>
 
-<!-- MOBILE TOGGLE -->
-<button class="mobile-toggle" id="mobileToggle" onclick="toggleSidebar()">☰</button>
+    <!-- MOBILE TOGGLE -->
+    <button class="mobile-toggle" id="mobileToggle" onclick="toggleSidebar()">☰</button>
 
-<div class="app-wrapper">
+    <div class="app-wrapper">
 
-    <!-- ============ SIDEBAR ============ -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-logo">
-            <h2><span class="heart-icon">❤️</span> CardioAI</h2>
-        </div>
-
-        <ul class="nav-items" id="navItems">
-            <li class="nav-item active" data-page="register">
-                <a onclick="navigateTo('register')">
-                    <span class="nav-icon">👤</span> Register
-                </a>
-            </li>
-            <li class="nav-item" data-page="input">
-                <a onclick="navigateTo('input')">
-                    <span class="nav-icon">📝</span> Health Input
-                </a>
-            </li>
-            <li class="nav-item" data-page="results">
-                <a onclick="navigateTo('results')">
-                    <span class="nav-icon">📊</span> Results
-                </a>
-            </li>
-            <li class="nav-item" data-page="chat">
-                <a onclick="navigateTo('chat')">
-                    <span class="nav-icon">💬</span> AI Chat
-                </a>
-            </li>
-            <li class="nav-item" data-page="history">
-                <a onclick="navigateTo('history')">
-                    <span class="nav-icon">📚</span> History
-                </a>
-            </li>
-        </ul>
-
-        <!-- User info (shown after login) -->
-        <div class="user-info-bar" id="sidebarUserInfo" style="display:none;">
-            <div class="user-avatar" id="userAvatar">?</div>
-            <div class="user-details">
-                <div class="user-name" id="sidebarUserName">—</div>
-                <div class="user-email" id="sidebarUserEmail">—</div>
+        <!-- ============ SIDEBAR ============ -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <h2><span class="heart-icon">❤️</span> CardioAI</h2>
             </div>
-        </div>
 
-        <div class="sidebar-footer">
-            Powered by Agentic AI Pipeline
-        </div>
-    </aside>
+            <ul class="nav-items" id="navItems">
+                <li class="nav-item active" data-page="register">
+                    <a onclick="navigateTo('register')">
+                        <span class="nav-icon">👤</span> Register
+                    </a>
+                </li>
+                <li class="nav-item" data-page="input">
+                    <a onclick="navigateTo('input')">
+                        <span class="nav-icon">📝</span> Health Input
+                    </a>
+                </li>
+                <li class="nav-item" data-page="results">
+                    <a onclick="navigateTo('results')">
+                        <span class="nav-icon">📊</span> Results
+                    </a>
+                </li>
+                <li class="nav-item" data-page="chat">
+                    <a onclick="navigateTo('chat')">
+                        <span class="nav-icon">💬</span> AI Chat
+                    </a>
+                </li>
+                <li class="nav-item" data-page="history">
+                    <a onclick="navigateTo('history')">
+                        <span class="nav-icon">📚</span> History
+                    </a>
+                </li>
+            </ul>
 
-    <!-- ============ MAIN CONTENT ============ -->
-    <main class="main-content">
+            <!-- User info (shown after login) -->
+            <div class="user-info-bar" id="sidebarUserInfo" style="display:none;">
+                <div class="user-avatar" id="userAvatar">?</div>
+                <div class="user-details">
+                    <div class="user-name" id="sidebarUserName">—</div>
+                    <div class="user-email" id="sidebarUserEmail">—</div>
+                </div>
+            </div>
 
-        <!-- ==============================
+            <div class="sidebar-footer">
+                Powered by Agentic AI Pipeline
+            </div>
+        </aside>
+
+        <!-- ============ MAIN CONTENT ============ -->
+        <main class="main-content">
+
+            <!-- ==============================
              VIEW 1: REGISTER / LOGIN
              ============================== -->
-        <section class="view active" id="view-register">
-            <div class="page-header">
-                <h1>Welcome to CardioAI</h1>
-                <p>Register or sign in to start your heart disease risk assessment</p>
-            </div>
-
-            <div class="glass-card" style="max-width: 520px;">
-                <div class="toggle-group">
-                    <button class="toggle-btn active" onclick="toggleRegMode('new')" id="togNew">New User</button>
-                    <button class="toggle-btn" onclick="toggleRegMode('existing')" id="togExist">Existing User</button>
+            <section class="view active" id="view-register">
+                <div class="page-header">
+                    <h1>Welcome to CardioAI</h1>
+                    <p>Register or sign in to start your heart disease risk assessment</p>
                 </div>
 
-                <!-- New User Form -->
-                <div id="newUserForm">
-                    <div class="form-group">
-                        <label for="regName">Full Name</label>
-                        <input type="text" id="regName" placeholder="Enter your full name">
-                    </div>
-                    <div class="form-group">
-                        <label for="regEmail">Email Address</label>
-                        <input type="email" id="regEmail" placeholder="name@example.com">
-                    </div>
-                    <div class="form-group">
-                        <label for="regMobile">Mobile Number</label>
-                        <input type="tel" id="regMobile" placeholder="+91 XXXXX XXXXX">
-                    </div>
-                    <button class="btn btn-primary btn-block" onclick="registerUser()">
-                        🚀 Register & Continue
-                    </button>
-                </div>
-
-                <!-- Existing User Form -->
-                <div id="existUserForm" style="display:none;">
-                    <div class="form-group">
-                        <label for="existEmail">Select Your Account</label>
-                        <select id="existEmail">
-                            <option value="">Loading users...</option>
-                        </select>
-                    </div>
-                    <button class="btn btn-primary btn-block" onclick="loginUser()">
-                        ➡️ Continue
-                    </button>
-                </div>
-
-                <div id="regMessage" style="margin-top: 16px;"></div>
-            </div>
-        </section>
-
-        <!-- ==============================
-             VIEW 2: HEALTH INPUT
-             ============================== -->
-        <section class="view" id="view-input">
-            <div class="page-header">
-                <h1>Health Assessment</h1>
-                <p>Enter your health data using form, free text, or upload a medical report</p>
-            </div>
-
-            <div class="glass-card">
-                <!-- Tabs -->
-                <div class="tabs">
-                    <button class="tab-btn active" onclick="switchTab('form')" id="tabForm">📋 Form Input</button>
-                    <button class="tab-btn" onclick="switchTab('text')" id="tabText">✍️ Free Text</button>
-                    <button class="tab-btn" onclick="switchTab('upload')" id="tabUpload">📄 Upload Report</button>
-                </div>
-
-                <!-- TAB: Form Input -->
-                <div class="tab-content active" id="content-form">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="fAge">Age</label>
-                            <input type="number" id="fAge" placeholder="e.g. 55" min="1" max="120">
-                        </div>
-                        <div class="form-group">
-                            <label for="fSex">Sex</label>
-                            <select id="fSex">
-                                <option value="M">Male</option>
-                                <option value="F">Female</option>
-                            </select>
-                        </div>
+                <div class="glass-card" style="max-width: 520px;">
+                    <div class="toggle-group">
+                        <button class="toggle-btn active" onclick="toggleRegMode('new')" id="togNew">New User</button>
+                        <button class="toggle-btn" onclick="toggleRegMode('existing')" id="togExist">Existing
+                            User</button>
                     </div>
 
-                    <div class="form-row">
+                    <!-- New User Form -->
+                    <div id="newUserForm">
                         <div class="form-group">
-                            <label for="fChestPain">Chest Pain Type</label>
-                            <select id="fChestPain">
-                                <option value="ATA">ATA — Atypical Angina</option>
-                                <option value="NAP">NAP — Non-Anginal Pain</option>
-                                <option value="TA">TA — Typical Angina</option>
-                            </select>
+                            <label for="regName">Full Name</label>
+                            <input type="text" id="regName" placeholder="Enter your full name">
                         </div>
                         <div class="form-group">
-                            <label for="fRestingBP">Resting Blood Pressure (mm Hg)</label>
-                            <input type="number" id="fRestingBP" placeholder="e.g. 130" min="0" max="250">
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="fCholesterol">Cholesterol (mg/dl)</label>
-                            <input type="number" id="fCholesterol" placeholder="e.g. 250" min="0" max="600">
+                            <label for="regEmail">Email Address</label>
+                            <input type="email" id="regEmail" placeholder="name@example.com">
                         </div>
                         <div class="form-group">
-                            <label for="fFastingBS">Fasting Blood Sugar > 120 mg/dl</label>
-                            <select id="fFastingBS">
-                                <option value="0">No</option>
-                                <option value="1">Yes</option>
-                            </select>
+                            <label for="regMobile">Mobile Number</label>
+                            <input type="tel" id="regMobile" placeholder="+91 XXXXX XXXXX">
                         </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="fRestingECG">Resting ECG</label>
-                            <select id="fRestingECG">
-                                <option value="Normal">Normal</option>
-                                <option value="ST">ST</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="fMaxHR">Max Heart Rate</label>
-                            <input type="number" id="fMaxHR" placeholder="e.g. 150" min="0" max="250">
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="fExerciseAngina">Exercise-Induced Angina</label>
-                            <select id="fExerciseAngina">
-                                <option value="N">No</option>
-                                <option value="Y">Yes</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="fOldpeak">Oldpeak (ST Depression)</label>
-                            <input type="number" step="0.1" id="fOldpeak" placeholder="e.g. 1.5" min="0" max="10">
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="fSTSlope">ST Slope</label>
-                            <select id="fSTSlope">
-                                <option value="Up">Up</option>
-                                <option value="Flat">Flat</option>
-                            </select>
-                        </div>
-                        <div class="form-group"></div>
-                    </div>
-
-                    <button class="btn btn-danger btn-block" onclick="submitFormPrediction()" id="btnPredict" style="margin-top: 8px;">
-                        🫀 Run AI Prediction
-                    </button>
-                </div>
-
-                <!-- TAB: Free Text -->
-                <div class="tab-content" id="content-text">
-                    <div class="form-group">
-                        <label for="freeText">Describe your symptoms and health details</label>
-                        <textarea id="freeText" rows="8" placeholder="e.g. I am a 55-year-old male with chest pain, high blood pressure of 140, cholesterol 250, max heart rate 130..."></textarea>
-                    </div>
-                    <button class="btn btn-danger btn-block" onclick="submitTextPrediction()">
-                        🧠 Analyze & Predict
-                    </button>
-                </div>
-
-                <!-- TAB: Upload Report -->
-                <div class="tab-content" id="content-upload">
-                    <div class="upload-area" onclick="document.getElementById('pdfFile').click()">
-                        <div class="upload-icon">📁</div>
-                        <p><strong>Click to upload</strong> your medical report (PDF)</p>
-                        <p style="font-size:12px; margin-top:8px;">Text + OCR extraction supported</p>
-                        <input type="file" id="pdfFile" accept=".pdf" onchange="handleFileUpload(event)">
-                    </div>
-                    <div id="uploadFileName" style="margin-top: 12px; color: var(--accent-green); font-size: 13px;"></div>
-                    <div id="extractedPreview" style="display: none; margin-top: 16px;">
-                        <div class="form-group">
-                            <label>Extracted Data Preview</label>
-                            <textarea id="extractedText" rows="5" readonly style="font-size: 12px;"></textarea>
-                        </div>
-                        <button class="btn btn-danger btn-block" onclick="submitUploadPrediction()">
-                            🔬 Run Prediction from Report
+                        <button class="btn btn-primary btn-block" onclick="registerUser()">
+                            🚀 Register & Continue
                         </button>
                     </div>
+
+                    <!-- Existing User Form -->
+                    <div id="existUserForm" style="display:none;">
+                        <div class="form-group">
+                            <label for="existEmail">Select Your Account</label>
+                            <select id="existEmail">
+                                <option value="">Loading users...</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary btn-block" onclick="loginUser()">
+                            ➡️ Continue
+                        </button>
+                    </div>
+
+                    <div id="regMessage" style="margin-top: 16px;"></div>
+                </div>
+            </section>
+
+            <!-- ==============================
+             VIEW 2: HEALTH INPUT
+             ============================== -->
+            <section class="view" id="view-input">
+                <div class="page-header">
+                    <h1>Health Assessment</h1>
+                    <p>Enter your health data using form, free text, or upload a medical report</p>
                 </div>
 
-                <div id="inputMessage" style="margin-top: 16px;"></div>
-            </div>
-        </section>
+                <div class="glass-card">
+                    <!-- Tabs -->
+                    <div class="tabs">
+                        <button class="tab-btn active" onclick="switchTab('form')" id="tabForm">📋 Form Input</button>
+                        <button class="tab-btn" onclick="switchTab('text')" id="tabText">✍️ Free Text</button>
+                        <button class="tab-btn" onclick="switchTab('upload')" id="tabUpload">📄 Upload Report</button>
+                    </div>
 
-        <!-- ==============================
+                    <!-- TAB: Form Input -->
+                    <div class="tab-content active" id="content-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="fAge">Age</label>
+                                <input type="number" id="fAge" placeholder="e.g. 55" min="1" max="120">
+                            </div>
+                            <div class="form-group">
+                                <label for="fSex">Sex</label>
+                                <select id="fSex">
+                                    <option value="M">Male</option>
+                                    <option value="F">Female</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="fChestPain">Chest Pain Type</label>
+                                <select id="fChestPain">
+                                    <option value="ATA">ATA — Atypical Angina</option>
+                                    <option value="NAP">NAP — Non-Anginal Pain</option>
+                                    <option value="TA">TA — Typical Angina</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="fRestingBP">Resting Blood Pressure (mm Hg)</label>
+                                <input type="number" id="fRestingBP" placeholder="e.g. 120-180" min="0" max="250">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="fCholesterol">Cholesterol (mg/dl)</label>
+                                <input type="number" id="fCholesterol" placeholder="e.g. 250" min="0" max="600">
+                            </div>
+                            <div class="form-group">
+                                <label for="fFastingBS">Fasting Blood Sugar > 120 mg/dl</label>
+                                <select id="fFastingBS">
+                                    <option value="0">No</option>
+                                    <option value="1">Yes</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="fRestingECG">Resting ECG</label>
+                                <select id="fRestingECG">
+                                    <option value="Normal">Normal</option>
+                                    <option value="ST">ST</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="fMaxHR">Max Heart Rate</label>
+                                <input type="number" id="fMaxHR" placeholder="e.g. 150" min="0" max="250">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="fExerciseAngina">Exercise-Induced Angina</label>
+                                <select id="fExerciseAngina">
+                                    <option value="N">No</option>
+                                    <option value="Y">Yes</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="fOldpeak">Oldpeak (ST Depression)</label>
+                                <input type="number" step="0.1" id="fOldpeak" placeholder="e.g. 1.5" min="0" max="10">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="fSTSlope">ST Slope</label>
+                                <select id="fSTSlope">
+                                    <option value="Up">Up</option>
+                                    <option value="Flat">Flat</option>
+                                </select>
+                            </div>
+                            <div class="form-group"></div>
+                        </div>
+
+                        <button class="btn btn-danger btn-block" onclick="submitFormPrediction()" id="btnPredict"
+                            style="margin-top: 8px;">
+                            🫀 Run AI Prediction
+                        </button>
+                    </div>
+
+                    <!-- TAB: Free Text -->
+                    <div class="tab-content" id="content-text">
+                        <div class="form-group">
+                            <label for="freeText">Describe your symptoms and health details</label>
+                            <textarea id="freeText" rows="8"
+                                placeholder="e.g. I am a 55-year-old male with chest pain, high blood pressure of 140, cholesterol 250, max heart rate 130..."></textarea>
+                        </div>
+                        <button class="btn btn-danger btn-block" onclick="submitTextPrediction()">
+                            🧠 Analyze & Predict
+                        </button>
+                    </div>
+
+                    <!-- TAB: Upload Report -->
+                    <div class="tab-content" id="content-upload">
+                        <div class="upload-area" onclick="document.getElementById('pdfFile').click()">
+                            <div class="upload-icon">📁</div>
+                            <p><strong>Click to upload</strong> your medical report (PDF)</p>
+                            <p style="font-size:12px; margin-top:8px;">Text + OCR extraction supported</p>
+                            <input type="file" id="pdfFile" accept=".pdf" onchange="handleFileUpload(event)">
+                        </div>
+                        <div id="uploadFileName" style="margin-top: 12px; color: var(--accent-green); font-size: 13px;">
+                        </div>
+                        <div id="extractedPreview" style="display: none; margin-top: 16px;">
+                            <div class="form-group">
+                                <label>Extracted Data Preview</label>
+                                <textarea id="extractedText" rows="5" readonly style="font-size: 12px;"></textarea>
+                            </div>
+                            <button class="btn btn-danger btn-block" onclick="submitUploadPrediction()">
+                                🔬 Run Prediction from Report
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="inputMessage" style="margin-top: 16px;"></div>
+                </div>
+            </section>
+
+            <!-- ==============================
              VIEW 3: RESULTS
              ============================== -->
-        <section class="view" id="view-results">
-            <div class="page-header">
-                <h1>Prediction Results</h1>
-                <p>AI-powered analysis of your heart disease risk</p>
-            </div>
+            <section class="view" id="view-results">
+                <div class="page-header">
+                    <h1>Prediction Results</h1>
+                    <p>AI-powered analysis of your heart disease risk</p>
+                </div>
 
-            <!-- Risk Gauge -->
-            <div class="glass-card">
-                <div class="risk-gauge-container">
-                    <div class="risk-gauge">
-                        <svg viewBox="0 0 200 200">
-                            <circle class="gauge-bg" cx="100" cy="100" r="85"></circle>
-                            <circle class="gauge-fill" id="gaugeFill" cx="100" cy="100" r="85"
-                                stroke-dasharray="534" stroke-dashoffset="534"></circle>
-                        </svg>
-                        <div class="gauge-label">
-                            <span class="gauge-value" id="gaugeValue">0%</span>
-                            <span class="gauge-text">Risk Score</span>
+                <!-- Risk Gauge -->
+                <div class="glass-card">
+                    <div class="risk-gauge-container">
+                        <div class="risk-gauge">
+                            <svg viewBox="0 0 200 200">
+                                <circle class="gauge-bg" cx="100" cy="100" r="85"></circle>
+                                <circle class="gauge-fill" id="gaugeFill" cx="100" cy="100" r="85"
+                                    stroke-dasharray="534" stroke-dashoffset="534"></circle>
+                            </svg>
+                            <div class="gauge-label">
+                                <span class="gauge-value" id="gaugeValue">0%</span>
+                                <span class="gauge-text">Risk Score</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Stat Cards -->
-            <div class="result-grid">
-                <div class="stat-card">
-                    <div class="stat-icon">🫀</div>
-                    <div class="stat-value" id="resPrediction">—</div>
-                    <div class="stat-label">Prediction</div>
+                <!-- Stat Cards -->
+                <div class="result-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">🫀</div>
+                        <div class="stat-value" id="resPrediction">—</div>
+                        <div class="stat-label">Prediction</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⚡</div>
+                        <div class="stat-value" id="resRisk">—</div>
+                        <div class="stat-label">Risk Level</div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon">⚡</div>
-                    <div class="stat-value" id="resRisk">—</div>
-                    <div class="stat-label">Risk Level</div>
-                </div>
-            </div>
 
-            <!-- Reasoning Accordion -->
-            <div class="accordion-item" id="accReasoning">
-                <div class="accordion-header" onclick="toggleAccordion('accReasoning')">
-                    <span>🧠 Medical Interpretation</span>
-                    <span class="acc-icon">▼</span>
+                <!-- Reasoning Accordion -->
+                <div class="accordion-item" id="accReasoning">
+                    <div class="accordion-header" onclick="toggleAccordion('accReasoning')">
+                        <span>🧠 Medical Interpretation</span>
+                        <span class="acc-icon">▼</span>
+                    </div>
+                    <div class="accordion-body">
+                        <div class="accordion-body-inner" id="resReasoning">No data yet.</div>
+                    </div>
                 </div>
-                <div class="accordion-body">
-                    <div class="accordion-body-inner" id="resReasoning">No data yet.</div>
-                </div>
-            </div>
 
-            <!-- Lifestyle Accordion -->
-            <div class="accordion-item" id="accLifestyle">
-                <div class="accordion-header" onclick="toggleAccordion('accLifestyle')">
-                    <span>🥗 Lifestyle Recommendations</span>
-                    <span class="acc-icon">▼</span>
+                <!-- Lifestyle Accordion -->
+                <div class="accordion-item" id="accLifestyle">
+                    <div class="accordion-header" onclick="toggleAccordion('accLifestyle')">
+                        <span>🥗 Lifestyle Recommendations</span>
+                        <span class="acc-icon">▼</span>
+                    </div>
+                    <div class="accordion-body">
+                        <div class="accordion-body-inner" id="resLifestyle">No data yet.</div>
+                    </div>
                 </div>
-                <div class="accordion-body">
-                    <div class="accordion-body-inner" id="resLifestyle">No data yet.</div>
-                </div>
-            </div>
 
-            <!-- Download Button -->
-            <button class="btn btn-primary" onclick="downloadReport()" style="margin-top: 8px;">
-                📥 Download PDF Report
-            </button>
-            <button class="btn btn-outline" onclick="navigateTo('chat')" style="margin-top: 8px; margin-left: 8px;">
-                💬 Ask Follow-Up Questions
-            </button>
-        </section>
+                <!-- Download Button -->
+                <button class="btn btn-primary" onclick="downloadReport()" style="margin-top: 8px;">
+                    📥 Download PDF Report
+                </button>
+                <button class="btn btn-outline" onclick="navigateTo('chat')" style="margin-top: 8px; margin-left: 8px;">
+                    💬 Ask Follow-Up Questions
+                </button>
+            </section>
 
-        <!-- ==============================
+            <!-- ==============================
              VIEW 4: CHAT
              ============================== -->
-        <section class="view" id="view-chat">
-            <div class="page-header">
-                <h1>AI Medical Chat</h1>
-                <p>Ask follow-up questions about your results</p>
-            </div>
+            <section class="view" id="view-chat">
+                <div class="page-header">
+                    <h1>AI Medical Chat</h1>
+                    <p>Ask follow-up questions about your results</p>
+                </div>
 
-            <div class="glass-card" style="padding: 0; overflow: hidden;">
-                <div class="chat-container">
-                    <div class="chat-messages" id="chatMessages">
-                        <div class="chat-msg ai">
-                            👋 Hello! I have your prediction results. Feel free to ask me anything about your heart health assessment.
+                <div class="glass-card" style="padding: 0; overflow: hidden;">
+                    <div class="chat-container">
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="chat-msg ai">
+                                👋 Hello! I have your prediction results. Feel free to ask me anything about your heart
+                                health assessment.
+                            </div>
+                        </div>
+                        <div class="chat-input-area">
+                            <input type="text" id="chatInput" placeholder="Ask a question about your results..."
+                                onkeydown="if(event.key==='Enter')sendChat()">
+                            <button class="btn btn-primary" onclick="sendChat()">Send</button>
                         </div>
                     </div>
-                    <div class="chat-input-area">
-                        <input type="text" id="chatInput" placeholder="Ask a question about your results..."
-                            onkeydown="if(event.key==='Enter')sendChat()">
-                        <button class="btn btn-primary" onclick="sendChat()">Send</button>
-                    </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- ==============================
+            <!-- ==============================
              VIEW 5: HISTORY
              ============================== -->
-        <section class="view" id="view-history">
-            <div class="page-header">
-                <h1>Prediction History</h1>
-                <p>View all past assessments</p>
-            </div>
+            <section class="view" id="view-history">
+                <div class="page-header">
+                    <h1>Prediction History</h1>
+                    <p>View all past assessments</p>
+                </div>
 
-            <div style="display: flex; gap: 12px; margin-bottom: 24px;">
-                <button class="btn btn-outline" onclick="loadHistory()">🔄 Refresh</button>
-                <button class="btn btn-danger" onclick="clearHistory()">🗑️ Clear History</button>
-            </div>
+                <div style="display: flex; gap: 12px; margin-bottom: 24px;">
+                    <button class="btn btn-outline" onclick="loadHistory()">🔄 Refresh</button>
+                    <button class="btn btn-danger" onclick="clearHistory()">🗑️ Clear History</button>
+                </div>
 
-            <div id="historyContainer">
-                <div class="alert alert-info">Loading history...</div>
-            </div>
-        </section>
+                <div id="historyContainer">
+                    <div class="alert alert-info">Loading history...</div>
+                </div>
+            </section>
 
-    </main>
-</div>
+        </main>
+    </div>
 
-<script src="/static/particles.js"></script>
-<script src="/static/app.js"></script>
+    <script src="/static/particles.js"></script>
+    <script src="/static/app.js"></script>
 </body>
+
 </html>
